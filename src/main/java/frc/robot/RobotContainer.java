@@ -3,6 +3,7 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot;
+
 import java.util.Map;
 import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -49,39 +50,40 @@ import com.pathplanner.lib.path.PathPlannerTrajectory;
 import edu.wpi.first.cscore.UsbCamera;
 import frc.robot.subsystems.*;
 import frc.robot.commands.*;
-import frc.robot.commands.Otonom.FRCPathPlanner;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 
 /**
- * This class is where the bulk of the robot should be declared. Since Command-based is a "declarative" paradigm, very
- * little robot logic should actually be handled in the {@link Robot} periodic methods (other than the scheduler calls).
- * Instead, the structure of the robot (including subsystems, commands, and trigger mappings) should be declared here.
+ * This class is where the bulk of the robot should be declared. Since
+ * Command-based is a "declarative" paradigm, very
+ * little robot logic should actually be handled in the {@link Robot} periodic
+ * methods (other than the scheduler calls).
+ * Instead, the structure of the robot (including subsystems, commands, and
+ * trigger mappings) should be declared here.
  */
-public class RobotContainer
-{
+public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   public final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
-                                                                         "swerve/maxSwerve"));
+      "swerve/maxSwerve"));
   public static final IntakeSubsystem m_intake = new IntakeSubsystem();
   public static final ShooterSubsystem m_shooter = new ShooterSubsystem();
   private final ArmSubsystem m_arm = new ArmSubsystem();
-  private final PnumaticSubsystem  m_climb = new PnumaticSubsystem();
+  private final PnumaticSubsystem m_climb = new PnumaticSubsystem();
   private final VisionSubsystem m_vision = new VisionSubsystem();
-   private final TargetSwerveSubsystem m_TargetSwerveSubsystem = new TargetSwerveSubsystem();
-   SendableChooser<Command> m_chooser = new SendableChooser<>();
+  SendableChooser<Command> m_chooser = new SendableChooser<>();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   final CommandPS5Controller driverXbox = new CommandPS5Controller(0);
-   final CommandPS5Controller testPS5 = new CommandPS5Controller(1);
-   private RobotContainer m_robotContainer;
-   
-     private Command TargetCoommand;
-     private final ShootCommand m_ShootCommand = new ShootCommand(m_intake, m_shooter);
+  final CommandPS5Controller testPS5 = new CommandPS5Controller(1);
+  private RobotContainer m_robotContainer;
+
+  private Command TargetCoommand;
+  private final ShootCommand m_ShootCommand = new ShootCommand(m_intake, m_shooter);
   CvSink cvSink;
   UsbCamera usbCamera;
-   private void configureAutoCommmands(){
+
+  private void configureAutoCommmands() {
     PortForwarder.add(5800, "photonvision.local", 5800);
   }
 
@@ -91,24 +93,16 @@ public class RobotContainer
   public RobotContainer() {
     NamedCommands.registerCommand("shoot", m_shooter.runShooterCommand());
     NamedCommands.registerCommand("shootstop", m_shooter.stopShooterCommand());
-    
+
     configureAutoCommmands();
     // Configure the trigger bindings
     configureBindings();
-    
-  
- 
-          CvSource outputStream = CameraServer.putVideo("Rectangle", 100, 100);
+
+    CvSource outputStream = CameraServer.putVideo("Rectangle", 100, 100);
     Command driveFieldOrientedAngularVelocity = drivebase.driveCommand(
         () -> MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
         () -> MathUtil.applyDeadband(driverXbox.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
-        () -> driverXbox.getRawAxis(2)
-    );
-     Command TargetToSpeaker = drivebase.driveCommand(
-        () -> MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
-        () -> MathUtil.applyDeadband(driverXbox.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
-        () -> m_TargetSwerveSubsystem.TargetToSpeaker()
-    );
+        () -> driverXbox.getRawAxis(2));
 
     Command driveFieldOrientedDirectAngleSim = drivebase.simDriveCommand(
         () -> MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
@@ -116,107 +110,97 @@ public class RobotContainer
         () -> driverXbox.getRawAxis(2));
 
     drivebase.setDefaultCommand(
-      !RobotBase.isSimulation() ? driveFieldOrientedAngularVelocity : driveFieldOrientedDirectAngleSim
-      // m_TargetSwerveSubsystem.TargetToSpeaker()==-1?driveFieldOrientedAngularVelocity:TargetToSpeaker
+        !RobotBase.isSimulation() ? driveFieldOrientedAngularVelocity : driveFieldOrientedDirectAngleSim
     );
-        
+
   }
 
-  private void configureBindings()
-  {
-       m_chooser.addOption("bluecapraz", drivebase.getAutonomousCommand("bluecapraz"));
-   m_chooser.addOption("Mehmet", drivebase.getAutonomousCommand("Mehmet"));
-  m_chooser.setDefaultOption("shootdeneme", drivebase.getAutonomousCommand("shootdeneme"));
+  private void configureBindings() {
+    m_chooser.addOption("bluecapraz", drivebase.getAutonomousCommand("bluecapraz"));
+    m_chooser.addOption("Mehmet", drivebase.getAutonomousCommand("Mehmet"));
+    m_chooser.setDefaultOption("shootdeneme", drivebase.getAutonomousCommand("shootdeneme"));
 
     SmartDashboard.putData(m_chooser);
-      
+
     driverXbox.cross().onTrue((Commands.runOnce(drivebase::zeroGyro)));
-    // driverXbox.x().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
+    // driverXbox.x().whileTrue(Commands.runOnce(drivebase::lock,
+    // drivebase).repeatedly());
 
     driverXbox.povUp().onTrue(m_arm.armUpperReset());
     driverXbox.povDown().onTrue(m_arm.armLowerReset());
 
     // driverXbox.button(10).whileTrue(m_intake.stopFeederCommand());
 
-    
     // Üçgene basıldığında otomatik kol ayarlamayı aç
     driverXbox.triangle().toggleOnTrue(
-      m_arm.setArmAngleCommand(() -> {
-        m_arm.isPIDActive = true;
-        SmartDashboard.putBoolean("Is auto arm on", true);
-        return m_arm.calculateArmAngle(m_vision.getDistanceToSpeaker());
-      })
-    );
+        m_arm.setArmAngleCommand(() -> {
+          m_arm.isPIDActive = true;
+          SmartDashboard.putBoolean("Is auto arm on", true);
+          return m_arm.calculateArmAngle(m_vision.getDistanceToSpeaker());
+        }));
 
     // Modun kapandığını SmartDashboarda haber ver
     driverXbox.triangle().toggleOnFalse(
-      new InstantCommand(() -> {
-        m_arm.isPIDActive = false;
-        SmartDashboard.putBoolean("Is auto arm on", false);
-      })
-    );
-    
+        new InstantCommand(() -> {
+          m_arm.isPIDActive = false;
+          SmartDashboard.putBoolean("Is auto arm on", false);
+        }));
+
     driverXbox.circle().toggleOnTrue(
-      new InstantCommand(() -> {
-      m_intake.runIntakeOut();
-      m_intake.runFeederOut();
-        SmartDashboard.putBoolean("Is feeder out", false);
-      })
-    );
-      
+        new InstantCommand(() -> {
+          m_intake.runIntakeOut();
+          m_intake.runFeederOut();
+          SmartDashboard.putBoolean("Is feeder out", false);
+        }));
+
     driverXbox.circle().toggleOnFalse(
-      new InstantCommand(() -> {
-        m_intake.stopIntake();
-        m_intake.stopFeeder();
-        SmartDashboard.putBoolean("Is feeder out stop ", false);
-      })
+        new InstantCommand(() -> {
+          m_intake.stopIntake();
+          m_intake.stopFeeder();
+          SmartDashboard.putBoolean("Is feeder out stop ", false);
+        }));
+
+    driverXbox.povLeft().onTrue(
+        new InstantCommand(() -> {
+          m_climb.ClimbOn();
+          System.out.println("Is pnumutic open ");
+        }));
+
+    driverXbox.povRight().onTrue(
+        new InstantCommand(() -> {
+          m_climb.climof();
+          System.out.println("Is pnumutic off ");
+
+        })
+
     );
 
-      driverXbox.povLeft().onTrue(
-      new InstantCommand(() -> {
-         m_climb.ClimbOn();
-        System.out.println("Is pnumutic open ");
-      })
-    );
+    // driverXbox.circle().toggleOnTrue(
+    //     new InstantCommand(() -> {
+    //       m_TargetSwerveSubsystem.TargetAccept(true);
 
-     driverXbox.povRight().onTrue(
-      new InstantCommand(() -> {
-         m_climb.climof();
-               System.out.println("Is pnumutic off ");
-      
-      })
-      
-    );
-    
-  driverXbox.circle().toggleOnTrue(
-      new InstantCommand(() -> {
-        m_TargetSwerveSubsystem.TargetAccept(true);
-       
-        SmartDashboard.putBoolean("Target Speaker ", true);
-      })
-    );
-      driverXbox.circle().toggleOnFalse(
-      new InstantCommand(() -> {
-        m_TargetSwerveSubsystem.TargetAccept(false);
-       
-        SmartDashboard.putBoolean("Target Speaker ", false);
-      })
-    );
-    
-    
+    //       SmartDashboard.putBoolean("Target Speaker ", true);
+    //     }));
+    // driverXbox.circle().toggleOnFalse(
+    //     new InstantCommand(() -> {
+    //       m_TargetSwerveSubsystem.TargetAccept(false);
+
+    //       SmartDashboard.putBoolean("Target Speaker ", false);
+    //     }));
 
     driverXbox.L1().whileTrue(
-      new StartEndCommand(() -> m_arm.setVoltage(4), () -> m_arm.setVoltage(ArmConstants.kArmStatic), m_arm)
-    );
+        new StartEndCommand(() -> m_arm.setVoltage(4), () -> m_arm.setVoltage(ArmConstants.kArmStatic), m_arm));
     driverXbox.L2().whileTrue(
-      new StartEndCommand(() -> m_arm.setVoltage(-4), () -> m_arm.setVoltage(ArmConstants.kArmStatic), m_arm)
-    );
+        new StartEndCommand(() -> m_arm.setVoltage(-4), () -> m_arm.setVoltage(ArmConstants.kArmStatic), m_arm));
 
     driverXbox.R1().whileTrue(new ShootCommand(m_intake, m_shooter));
     driverXbox.R2().whileTrue(new StartEndCommand(
-      () -> { m_intake.runIntakeIn(); },
-      () -> { m_intake.stopIntake(); }
-    ));
+        () -> {
+          m_intake.runIntakeIn();
+        },
+        () -> {
+          m_intake.stopIntake();
+        }));
   }
 
   public void updateSmartDashboard() {
@@ -235,29 +219,26 @@ public class RobotContainer
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // FRCPathPlanner.autoChooser.getSelected(); 
+    // FRCPathPlanner.autoChooser.getSelected();
     // An example command will be run in autonomous
     drivebase.zeroGyro();
     return m_chooser.getSelected(); // path takip kodu */
   }
 
-  public void setDriveMode()
-  {
-    //drivebase.setDefaultCommand();
+  public void setDriveMode() {
+    // drivebase.setDefaultCommand();
   }
 
-  public void setMotorBrake(boolean brake)
-  {
+  public void setMotorBrake(boolean brake) {
     drivebase.setMotorBrake(brake);
   }
 
-  public static IntakeSubsystem getIntakeSubsystem(){
+  public static IntakeSubsystem getIntakeSubsystem() {
     return m_intake;
   }
 
-   public static ShooterSubsystem getShooterSubsystem(){
+  public static ShooterSubsystem getShooterSubsystem() {
     return m_shooter;
   }
-  
 
 }
