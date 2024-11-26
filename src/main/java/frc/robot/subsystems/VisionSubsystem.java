@@ -12,8 +12,6 @@ import com.pathplanner.lib.util.PIDConstants;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-
-
 public class VisionSubsystem extends SubsystemBase {
   // PhotonCamera camera = new PhotonCamera("Microsoft_LifeCam_HD-3000");
   // PhotonCamera obje = new PhotonCamera("TANDBERG_Video");
@@ -33,16 +31,50 @@ public class VisionSubsystem extends SubsystemBase {
     return result.hasTargets();
   }
 
+  public boolean IsOkeyToObj() {
+    // objeye yeterince yakın olduğumuzda robot containerdaki conditional commandi
+    // kapatıyor
+    var result = object_cam.getLatestResult();
+
+    if (result.hasTargets()) {
+      PhotonTrackedTarget target = result.getBestTarget();
+      double pitch = target.getPitch();
+      double yaw = target.getYaw();
+      if (yaw > 1 || pitch > 1) {
+        return result.hasTargets();
+      }
+      return false;
+    }
+    // SmartDashboard.putBoolean("is Seeing Object", result.hasTargets());
+    return false;
+  }
+
   public double getObjectYaw() {
     var result = object_cam.getLatestResult();
 
     if (result.hasTargets()) {
+      PhotonTrackedTarget target = result.getBestTarget();
+      double yaw = target.getYaw();
+      if (yaw > 1) {
+        return yaw;
+      }
+      // this returns the first element of the list
+      // SmartDashboard.putNumber("Best Object Yaw", yaw);
+      return -1;
+    }
+    return -1;
+  }
+
+  public double GetObjectPitch() {
+    var result = object_cam.getLatestResult();
+
+    if (result.hasTargets() && getObjectYaw() == -1) {
       // this returns the first element of the list
       PhotonTrackedTarget target = result.getBestTarget();
 
-      double yaw = target.getYaw();
+      double pitch = target.getPitch();
       // SmartDashboard.putNumber("Best Object Yaw", yaw);
-      return yaw;
+      return pitch;
     }
     return -1;
   }
@@ -62,7 +94,7 @@ public class VisionSubsystem extends SubsystemBase {
         // Cm cinsinden almak için 100 ile çarpıyorum
         double distance = target.getBestCameraToTarget().getX() * 100;
         SmartDashboard.putNumber("Speaker Distance", distance);
-        
+
         return distance;
       }
     }
@@ -80,7 +112,7 @@ public class VisionSubsystem extends SubsystemBase {
         // Cm cinsinden almak için 100 ile çarpıyorum
         double pitch = target.getPitch();
         SmartDashboard.putNumber("Speaker Pitch", pitch);
-        
+
         return pitch;
       }
     }
@@ -104,8 +136,7 @@ public class VisionSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Amp Distance", distance);
         return distance;
       }
-    }
-    else{
+    } else {
 
     }
     return -1;
