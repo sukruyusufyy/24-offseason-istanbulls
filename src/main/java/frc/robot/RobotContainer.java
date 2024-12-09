@@ -121,6 +121,7 @@ public class RobotContainer {
   private void configureBindings() {
     m_chooser.setDefaultOption("bluecapraz", drivebase.getAutonomousCommand("bluecapraz"));
     m_chooser.addOption("Mehmet", drivebase.getAutonomousCommand("Mehmet"));
+   /*   m_chooser.addOption("OneShootNote", drivebase.getAutonomousCommand("OneShootNote"));*/
 
     SmartDashboard.putData(m_chooser);
 
@@ -166,7 +167,7 @@ public class RobotContainer {
       new ConditionalCommand(
      driveAdjustToObject,
         new InstantCommand(),
-        () -> { return m_vision.IsOkeyToObj(); }
+        () -> { return m_vision.isSeeingObject(); }
       )
     );
      
