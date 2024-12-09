@@ -113,8 +113,9 @@ public class RobotContainer {
 
     driveAdjustToObject = drivebase.driveCommand(
           () -> MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
-          () -> MathUtil.applyDeadband(driverXbox.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
+          () -> MathUtil.applyDeadband(m_vision.GetObjectPitch(), OperatorConstants.LEFT_X_DEADBAND),
           () -> m_vision.getObjectYaw());
+          
   }
 
   private void configureBindings() {
@@ -163,11 +164,13 @@ public class RobotContainer {
 
     driverXbox.button(12).whileTrue(
       new ConditionalCommand(
-        driveAdjustToObject,
+     driveAdjustToObject,
         new InstantCommand(),
-        () -> { return m_vision.isSeeingObject(); }
+        () -> { return m_vision.IsOkeyToObj(); }
       )
     );
+     
+
 
     driverXbox.povLeft().onTrue(
         new InstantCommand(() -> {
