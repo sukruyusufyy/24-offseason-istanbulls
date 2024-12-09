@@ -92,7 +92,7 @@ public class RobotContainer {
    */
   public RobotContainer() {
     NamedCommands.registerCommand("shoot", m_shooter.runShooterCommand());
-    NamedCommands.registerCommand("shootstop", m_shooter.runShooterCommand());
+    NamedCommands.registerCommand("shootstop", m_shooter.stopShooterOnceCommand());
     configureAutoCommmands();
     // Configure the trigger bindings
     configureBindings();
@@ -119,7 +119,7 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    m_chooser.setDefaultOption("bluecapraz", drivebase.getAutonomousCommand("bluecapraz"));
+    m_chooser.setDefaultOption("OneShootNote", drivebase.getAutonomousCommand("OneShootNote"));
     m_chooser.addOption("Mehmet", drivebase.getAutonomousCommand("Mehmet"));
    /*   m_chooser.addOption("OneShootNote", drivebase.getAutonomousCommand("OneShootNote"));*/
 
@@ -163,13 +163,13 @@ public class RobotContainer {
     //       SmartDashboard.putBoolean("Is feeder out stop ", false);
     //     }));
 
-    driverXbox.button(12).whileTrue(
+   /* driverXbox.button(12).whileTrue(
       new ConditionalCommand(
      driveAdjustToObject,
         new InstantCommand(),
         () -> { return m_vision.isSeeingObject(); }
       )
-    );
+    ); */
      
 
 
